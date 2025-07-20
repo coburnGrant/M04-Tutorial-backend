@@ -4,30 +4,44 @@ const cors = require('cors');
 // Set up express
 const app = express();
 const router = express.Router();
+const bodyParser = require('body-parser');
+const Song = require('./models/song');
 
 // Use cors to allow cross-origin requests
 app.use(cors());
 
-// Set up routes
-router.get('/songs', (req, res) => {
-    const songs = [
-        {
-            title: "We Found Love",
-            artist: "Rihanna",
-            popularity: 10,
-            releaseDate: new Date(2011, 9, 22),
-            genre: ['electro house']
-        },
-        {
-            title: 'Happy',
-            artist: 'Pharrell Williams',
-            popularity: 10,
-            releaseDate: new Date(2013, 10, 21),
-            genre: ['soul', 'new soul']
-        }
-    ]
+app.use(bodyParser.json());
 
+// Set up routes
+
+// Grab all songs in the database
+router.get('/songs', async (req, res) => {
+  // res.send("HELLO SONGS");
+  // return;
+  let query = {};
+
+  if (req.query.genre) {
+    query.genre = req.query.genre;
+  }
+
+  // Find all songs matching the query
+  try {
+    const songs = await Song.find(query);
     res.json(songs);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+router.post('/songs', async (req, res) => {
+  const song = new Song(req.body);
+
+  try {
+    const savedSong = await song.save();
+    res.status(201).json(savedSong);
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
 app.use('/api', router);
