@@ -33,6 +33,37 @@ router.get('/songs', async (req, res) => {
   }
 });
 
+// Grab a single song by ID
+router.get('/songs/:id', async (req, res) => {
+  const songId = req.params.id;
+
+  try {
+    const song = await Song.findById(songId);
+    if (!song) {
+      return res.status(404).send('Song not found');
+    }
+    res.json(song);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Update a song by ID
+router.put('/songs/:id', async (req, res) => {
+  console.log('Updating song with ID:', req.params.id);
+  const songId = req.params.id;
+
+  try {
+    const song = req.body;
+
+    await Song.updateOne({ _id: songId }, song);
+
+    res.status(204).send('Song updated successfully');
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 router.post('/songs', async (req, res) => {
   const song = new Song(req.body);
 
